@@ -12,6 +12,9 @@ class KategoriModel extends Model
     protected $table = 'm_kategori';
     protected $primaryKey = 'kategori_id';
 
+    // Tambahkan properti $fillable untuk mass assignment
+    protected $fillable = ['kategori_nama', 'kategori_kode'];
+
     // Relasi ke barang
     public function barangs()
     {

@@ -6,6 +6,7 @@
         <h3 class="card-title">{{ $page->title }}</h3>
         <div class="card-tools">
             <a class="btn btn-sm btn-primary mt-1" href="{{ url('barang/create') }}">Tambah</a>
+            <button onclick="modalAction('{{ url('barang/create_ajax') }}')" class="btn btn-sm btn-success mt-1">Tambah Ajax</button>
         </div>
     </div>
 
@@ -30,41 +31,59 @@
                 </tr>
             </thead>
         </table>
+
+        <!-- Modal container untuk form Ajax -->
+        <div id="myModal" class="modal fade animate shake" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false" aria-hidden="true"></div>
     </div>
 </div>
 @endsection
 
 @push('js')
 <script>
-    $(document).ready(function() {
-        $('#table_barang').DataTable({
-            processing: true,
-            serverSide: true,
-            ajax: {
-                url: "{{ route('barang.list') }}",
-                type: "POST",
-                data: function(d) {
-                    d._token = "{{ csrf_token() }}";
+function modalAction(url = '') {
+    $('#myModal').load(url, function() {
+        $('#myModal').modal('show');
+    });
+}
+
+var dataBarang;
+$(document).ready(function() {
+    dataBarang = $('#table_barang').DataTable({
+        processing: true,
+        serverSide: true,
+        ajax: {
+            url: "{{ route('barang.list') }}",
+            type: "POST",
+            data: function(d) {
+                d._token = "{{ csrf_token() }}";
+            }
+        },
+        columns: [
+            { data: "barang_id", className: "text-center", orderable: true, searchable: true },
+            { data: "barang_kode", orderable: true, searchable: true },
+            { data: "barang_nama", orderable: true, searchable: true },
+            { data: "kategori_nama", orderable: true, searchable: true },
+            {
+                data: "harga_beli",
+                className: "text-right",
+                orderable: true,
+                searchable: true,
+                render: function(data) {
+                    return 'Rp ' + new Intl.NumberFormat('id-ID').format(data);
                 }
             },
-            columns: [
-                { data: "barang_id", className: "text-center", orderable: true, searchable: true },
-                { data: "barang_kode", orderable: true, searchable: true },
-                { data: "barang_nama", orderable: true, searchable: true },
-                { data: "kategori_nama", orderable: true, searchable: true },
-                { data: "harga_beli", className: "text-right", orderable: true, searchable: true,
-                  render: function(data) {
-                      return 'Rp ' + new Intl.NumberFormat('id-ID').format(data);
-                  }
-                },
-                { data: "harga_jual", className: "text-right", orderable: true, searchable: true,
-                  render: function(data) {
-                      return 'Rp ' + new Intl.NumberFormat('id-ID').format(data);
-                  }
-                },
-                { data: "aksi", orderable: false, searchable: false }
-            ]
-        });
+            {
+                data: "harga_jual",
+                className: "text-right",
+                orderable: true,
+                searchable: true,
+                render: function(data) {
+                    return 'Rp ' + new Intl.NumberFormat('id-ID').format(data);
+                }
+            },
+            { data: "aksi", orderable: false, searchable: false, className: "text-center" }
+        ]
     });
+});
 </script>
 @endpush
