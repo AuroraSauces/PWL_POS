@@ -7,7 +7,7 @@ use App\Models\UserModel;
 use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\Validator;
-
+use PhpParser\Node\Stmt\TryCatch;
 
 class UserController extends Controller
 {
@@ -40,11 +40,7 @@ class UserController extends Controller
         return DataTables::of($users)
             ->addIndexColumn() // menambahkan kolom index / no urut (default nama kolom: DT_RowIndex)
             ->addColumn('aksi', function ($user) {
-                /* $btn = '<a href="'.url('/user/' . $user->user_id).'" class="btn btn-info btn-sm">Detail</a> ';
-                $btn .= '<a href="'.url('/user/' . $user->user_id . '/edit').'" class="btn btn-warning btn-sm">Edit</a> ';
-                $btn .= '<form class="d-inline-block" method="POST" action="'. url('/user/'.$user->user_id).'">'
-                . csrf_field() . method_field('DELETE') .
-                '<button type="submit" class="btn btn-danger btn-sm" onclick="return confirm(\'Apakah Anda yakin menghapus data ini?\');">Hapus</button></form>'; */
+    
                 $btn = '<button onclick="modalAction(\''.url('/user/' . $user->user_id . '/show_ajax').'\')" class="btn btn-info btn-sm">Detail</button> ';
                 $btn .= '<button onclick="modalAction(\''.url('/user/' . $user->user_id . '/edit_ajax').'\')" class="btn btn-warning btn-sm">Edit</button> ';
                 $btn .= '<button onclick="modalAction(\''.url('/user/' . $user->user_id . '/delete_ajax').'\')" class="btn btn-danger btn-sm">Hapus</button> ';
@@ -263,11 +259,18 @@ public function delete_ajax(Request $request, $id)
     if ($request->ajax() || $request->wantsJson()) {
         $user = UserModel::find($id);
         if ($user) {
-            $user->delete();
-            return response()->json([
-                'status'  => true,
-                'message' => 'Data berhasil dihapus'
-            ]);
+            Try{
+                $user->delete();
+                return response()->json([
+                    'status'  => true,
+                    'message' => 'Data berhasil dihapus'
+                ]);
+            } catch(\illuminate\Database\QueryException $e){
+                return response()->json([
+                    'status'  => false,
+                    'message' => 'Data tidak bisa dihapus karena masih berhubungan'
+                ]);
+            }
         } else {
             return response()->json([
                 'status'  => false,

@@ -81,7 +81,7 @@ $(document).ready(function() {
 
     // Event listener untuk filter level_id
     $('#level_id').change(function() {
-        datauser.ajax.reload(null, false); // Reload data tanpa refresh halaman
+        dataUser.ajax.reload(null, false); // Reload data tanpa refresh halaman
     });
 });
 

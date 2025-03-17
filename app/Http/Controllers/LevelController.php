@@ -194,12 +194,18 @@ public function update_ajax(Request $request, $id)
     {
         $level = LevelModel::find($id);
         if ($level) {
-            $level->delete();
-            return response()->json([
-                'status'  => true,
-                'message' => 'Data level berhasil dihapus'
-            ]);
-        } else {
+            Try{
+                $level->delete();
+                return response()->json([
+                    'status'  => true,
+                    'message' => 'Data berhasil dihapus'
+                ]);
+            } catch(\illuminate\Database\QueryException $e){
+                return response()->json([
+                    'status'  => false,
+                    'message' => 'Data tidak bisa dihapus karena masih berhubungan'
+                ]);
+            }} else {
             return response()->json([
                 'status'  => false,
                 'message' => 'Data level tidak ditemukan'

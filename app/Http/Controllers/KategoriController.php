@@ -193,18 +193,25 @@ class KategoriController extends Controller
     {
         $kategori = KategoriModel::find($id);
         if ($kategori) {
-            $kategori->delete();
-            return response()->json([
-                'status'  => true,
-                'message' => 'Kategori berhasil dihapus'
-            ]);
-        } else {
-            return response()->json([
-                'status'  => false,
-                'message' => 'Data kategori tidak ditemukan'
-            ]);
-        }
-    }
+            if ($kategori) {
+                Try{
+                    $kategori->delete();
+                    return response()->json([
+                        'status'  => true,
+                        'message' => 'Data berhasil dihapus'
+                    ]);
+                } catch(\illuminate\Database\QueryException $e){
+                    return response()->json([
+                        'status'  => false,
+                        'message' => 'Data tidak bisa dihapus karena masih berhubungan'
+                    ]);
+                }} else {
+                return response()->json([
+                    'status'  => false,
+                    'message' => 'Data level tidak ditemukan'
+                ]);
+            }
+        }}
 
     // Menampilkan detail kategori via Ajax
     public function show_ajax($id)

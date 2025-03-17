@@ -16,31 +16,40 @@ class BarangController extends Controller
             'title' => 'Daftar Barang',
         ];
 
+        $kategori = KategoriModel::all();
+
         return view('barang.index', [
             'page'       => (object)['title' => 'Data Stok Barang'],
-            'breadcrumb' => $breadcrumb
+            'breadcrumb' => $breadcrumb,
+            'kategori'   => $kategori,
         ]);
     }
 
     public function list(Request $request)
-    {
-        if ($request->ajax()) {
-            $data = BarangModel::with('kategori')->get();
-            return DataTables::of($data)
-                ->addIndexColumn()
-                ->addColumn('kategori_nama', function($row) {
-                    return $row->kategori->kategori_nama ?? '-';
-                })
-                ->addColumn('aksi', function ($row) {
-                    $btn  = '<button onclick="modalAction(\''.url("barang/".$row->barang_id."/show_ajax").'\')" class="btn btn-info btn-sm">Detail</button> ';
-                    $btn .= '<button onclick="modalAction(\''.url("barang/".$row->barang_id."/edit_ajax").'\')" class="btn btn-warning btn-sm">Edit</button> ';
-                    $btn .= '<button onclick="modalAction(\''.url("barang/".$row->barang_id."/delete_ajax").'\')" class="btn btn-danger btn-sm">Hapus</button>';
-                    return $btn;
-                })
-                ->rawColumns(['aksi'])
-                ->make(true);
+{
+    if ($request->ajax()) {
+        $query = BarangModel::with('kategori'); // Buat query builder
+
+        if ($request->kategori_id) {
+            $query->where('kategori_id', $request->kategori_id);
         }
+
+        return DataTables::of($query)
+            ->addIndexColumn()
+            ->addColumn('kategori_nama', function($row) {
+                return $row->kategori->kategori_nama ?? '-';
+            })
+            ->addColumn('aksi', function ($row) {
+                $btn  = '<button onclick="modalAction(\''.url("barang/".$row->barang_id."/show_ajax").'\')" class="btn btn-info btn-sm">Detail</button> ';
+                $btn .= '<button onclick="modalAction(\''.url("barang/".$row->barang_id."/edit_ajax").'\')" class="btn btn-warning btn-sm">Edit</button> ';
+                $btn .= '<button onclick="modalAction(\''.url("barang/".$row->barang_id."/delete_ajax").'\')" class="btn btn-danger btn-sm">Hapus</button>';
+                return $btn;
+            })
+            ->rawColumns(['aksi'])
+            ->make(true);
     }
+}
+
 
     // === Endpoint Konvensional (Fallback) ===
 
@@ -261,15 +270,21 @@ class BarangController extends Controller
     {
         $barang = BarangModel::find($id);
         if ($barang) {
-            $barang->delete();
-            return response()->json([
-                'status'  => true,
-                'message' => 'Barang berhasil dihapus'
-            ]);
-        } else {
+            Try{
+                $barang->delete();
+                return response()->json([
+                    'status'  => true,
+                    'message' => 'Data berhasil dihapus'
+                ]);
+            } catch(\illuminate\Database\QueryException $e){
+                return response()->json([
+                    'status'  => false,
+                    'message' => 'Data tidak bisa dihapus karena masih berhubungan'
+                ]);
+            }} else {
             return response()->json([
                 'status'  => false,
-                'message' => 'Data barang tidak ditemukan'
+                'message' => 'Data level tidak ditemukan'
             ]);
         }
     }
