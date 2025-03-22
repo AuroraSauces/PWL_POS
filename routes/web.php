@@ -2,13 +2,24 @@
 
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WelcomeController;
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\LevelController;
 use App\Http\Controllers\KategoriController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\BarangController;
+use App\Http\Controllers\AuthController;
+use Illuminate\Support\Facades\Route;
 
+route::pattern('id', '[0-9]+');
+
+Route::get('login', [AuthController::class, 'login'])->name('login');
+Route::post('login', [AuthController::class, 'postlogin']);
+Route::get('logout', [AuthController::class, 'logout'])->middleware('logout');
+
+
+route::middleware(['auth'])->group(function(){
 Route::get('/', [WelcomeController::class, 'index']);
+Route::get('logout', [AuthController::class, 'logout']);
+
 
 Route::group(['prefix' => 'level'], function () {
     Route::get('/', [LevelController::class, 'index'])->name('level.index');
@@ -99,4 +110,7 @@ Route::group(['prefix' => 'user'], function () {
     Route::delete('/{id}', [UserController::class, 'destroy']);
     Route::get('/{id}/delete_ajax', [UserController::class, 'confirm_ajax']);
     Route::delete('/{id}/delete_ajax', [UserController::class, 'delete_ajax']);
-}); // Penutup group user
+});
+
+});
+
