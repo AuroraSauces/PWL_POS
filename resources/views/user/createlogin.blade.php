@@ -1,93 +1,76 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Daftar Pengguna</title>
 
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
-        .container {
-            background: white;
-            padding: 20px;
-            width: 300px;
-            border-radius: 5px;
-            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-        }
-        h3 {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        label {
-            font-size: 14px;
-            font-weight: bold;
-        }
-        input, select {
-            width: 100%;
-            padding: 8px;
-            margin: 5px 0 15px 0;
-            border: 1px solid #ccc;
-            border-radius: 3px;
-        }
-        button {
-            width: 100%;
-            padding: 10px;
-            background: #28a745;
-            border: none;
-            color: white;
-            font-size: 16px;
-            cursor: pointer;
-            border-radius: 3px;
-        }
-        button:hover {
-            background: #218838;
-        }
-        .back-btn {
-            text-align: center;
-            display: block;
-            margin-top: 10px;
-            text-decoration: none;
-            color: #007bff;
-            font-size: 14px;
-        }
-    </style>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="{{ asset('adminlte/plugins/fontawesome-free/css/all.min.css') }}">
+    <!-- Theme style -->
+    <link rel="stylesheet" href="{{ asset('adminlte/dist/css/adminlte.min.css') }}">
 </head>
-<body>
+<body class="hold-transition login-page">
+    <div class="login-box">
+        <div class="card card-outline card-primary">
+            <div class="card-header text-center">
+                <a href="{{ url('/') }}" class="h1"><b>Admin</b>LTE</a>
+            </div>
+            <div class="card-body">
+                <p class="login-box-msg">Daftar Pengguna Baru</p>
 
-<div class="container">
-    <h3>Daftar Pengguna</h3>
-    <form method="POST" action="{{ route('user.store') }}">
-        @csrf
+                <form method="POST" action="{{ route('user.store') }}">
+                    @csrf
 
-        <label>Level</label>
-        <select id="level_id" name="level_id" required>
-            <option value="">- Pilih Level -</option>
-            @foreach($level as $item)
-                <option value="{{ $item->level_id }}">{{ $item->level_nama }}</option>
-            @endforeach
-        </select>
+                    <div class="input-group mb-3">
+                        <input type="text" name="username" class="form-control" placeholder="Username" required>
+                        <div class="input-group-append">
+                            <div class="input-group-text"><span class="fas fa-user"></span></div>
+                        </div>
+                    </div>
 
-        <label>Username</label>
-        <input type="text" id="username" name="username" value="{{ old('username') }}" required>
+                    <div class="input-group mb-3">
+                        <input type="text" name="nama" class="form-control" placeholder="Nama Lengkap" required>
+                        <div class="input-group-append">
+                            <div class="input-group-text"><span class="fas fa-user-tag"></span></div>
+                        </div>
+                    </div>
 
-        <label>Nama</label>
-        <input type="text" id="nama" name="nama" value="{{ old('nama') }}" required>
+                    <div class="input-group mb-3">
+                        <select name="level_id" class="form-control" required>
+                            <option value="">- Pilih Level -</option>
+                            @foreach($level as $item)
+                                <option value="{{ $item->level_id }}">{{ $item->level_nama }}</option>
+                            @endforeach
+                        </select>
+                    </div>
 
-        <label>Password</label>
-        <input type="password" id="password" name="password" required>
+                    <div class="input-group mb-3">
+                        <input type="password" name="password" class="form-control" placeholder="Password" required>
+                        <div class="input-group-append">
+                            <div class="input-group-text"><span class="fas fa-lock"></span></div>
+                        </div>
+                    </div>
 
-        <button type="submit">Simpan</button>
-        <a href="{{ url('login') }}" class="back-btn">Kembali ke Login</a>
-    </form>
-</div>
+                    <div class="row">
+                        <div class="col-6">
+                            <button type="submit" class="btn btn-primary btn-block">Daftar</button>
+                        </div>
+                        <div class="col-6">
+                            <a href="{{ url('login') }}" class="btn btn-default btn-block">Kembali</a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 
+    <!-- jQuery -->
+    <script src="{{ asset('adminlte/plugins/jquery/jquery.min.js') }}"></script>
+    <!-- Bootstrap 4 -->
+    <script src="{{ asset('adminlte/plugins/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+    <!-- AdminLTE App -->
+    <script src="{{ asset('adminlte/dist/js/adminlte.min.js') }}"></script>
 </body>
 </html>

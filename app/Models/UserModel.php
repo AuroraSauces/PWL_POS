@@ -5,6 +5,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Support\Facades\Hash; // ✅ Untuk hash password
 
 class UserModel extends Authenticatable
 {
@@ -12,22 +13,34 @@ class UserModel extends Authenticatable
 
     protected $table = 'm_user';
     protected $primaryKey = 'user_id';
-    protected $fillable = ['level_id', 'username', 'nama', 'password','created_at','updated_at'];
+
+    protected $fillable = ['level_id', 'username', 'nama', 'password'];
+
     protected $hidden = ['password'];
     protected $casts = ['password' => 'hashed'];
 
-    public function level() : BelongsTo
+    public function setPasswordAttribute($value)
+    {
+        $this->attributes['password'] = Hash::make($value);
+    }
+
+    public function level(): BelongsTo
     {
         return $this->belongsTo(LevelModel::class, 'level_id', 'level_id');
     }
 
     public function getRoleName(): string
     {
-        return $this->level->nama;
+        return $this->level->level_nama;
     }
 
     public function hasRole($role): bool
     {
         return $this->level->level_kode == $role;
+    }
+
+    public function getRole()
+    {
+        return $this->level->level_kode;
     }
 }

@@ -14,6 +14,7 @@ Route::pattern('id', '[0-9]+');
 // Public routes - accessible without authentication
 Route::get('login', [AuthController::class, 'login'])->name('login');
 Route::post('login', [AuthController::class, 'postlogin']);
+Route::post('register', [AuthController::class, 'postRegister'])->name('register');
 
 // Protected routes - require authentication
 Route::middleware(['auth'])->group(function() {
@@ -80,7 +81,7 @@ Route::middleware(['auth'])->group(function() {
     });
 
     // Barang routes
-    Route::group(['prefix' => 'barang'], function () {
+        Route::middleware(['authorize:ADM,MNG'])->prefix('barang')->group(function () {
         Route::get('/', [BarangController::class, 'index'])->name('barang.index');
         Route::post('/list', [BarangController::class, 'list'])->name('barang.list');
         Route::get('/create', [BarangController::class, 'create'])->name('barang.create');
@@ -98,7 +99,7 @@ Route::middleware(['auth'])->group(function() {
     });
 
     // User routes
-    Route::group(['prefix' => 'user'], function () {
+        Route::middleware(['authorize:ADM'])->prefix('user')->group(function () {
         Route::get('/', [UserController::class, 'index'])->name('user.index');
         Route::post('/list', [UserController::class, 'list'])->name('user.list');
         Route::get('/create', [UserController::class, 'create'])->name('user.create');

@@ -6,24 +6,20 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Login Pengguna</title>
 
-    <!-- Google Font: Source Sans Pro -->
+    <!-- Google Font -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
 
     <!-- Font Awesome -->
     <link rel="stylesheet" href="{{ asset('adminlte/plugins/fontawesome-free/css/all.min.css') }}">
 
-    <!-- DataTables -->
-    <link rel="stylesheet" href="{{ asset('adminlte/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css') }}">
-    <link rel="stylesheet" href="{{ asset('adminlte/plugins/datatables-responsive/css/responsive.bootstrap4.min.css') }}">
-    <link rel="stylesheet" href="{{ asset('adminlte/plugins/datatables-buttons/css/buttons.bootstrap4.min.css') }}">
     <!-- SweetAlert2 -->
     <link rel="stylesheet" href="{{ asset('adminlte/plugins/sweetalert2-theme-bootstrap-4/bootstrap-4.min.css') }}">
+
     <!-- Theme style -->
     <link rel="stylesheet" href="{{ asset('adminlte/dist/css/adminlte.min.css') }}">
 </head>
 <body class="hold-transition login-page">
     <div class="login-box">
-        <!-- /.login-logo -->
         <div class="card card-outline card-primary">
             <div class="card-header text-center">
                 <a href="{{ url('/') }}" class="h1"><b>Admin</b>LTE</a>
@@ -35,41 +31,79 @@
                     <div class="input-group mb-3">
                         <input type="text" id="username" name="username" class="form-control" placeholder="Username">
                         <div class="input-group-append">
-                            <div class="input-group-text">
-                                <span class="fas fa-envelope"></span>
-                            </div>
+                            <div class="input-group-text"><span class="fas fa-user"></span></div>
                         </div>
                         <small id="error-username" class="error-text text-danger"></small>
                     </div>
                     <div class="input-group mb-3">
                         <input type="password" id="password" name="password" class="form-control" placeholder="Password">
                         <div class="input-group-append">
-                            <div class="input-group-text">
-                                <span class="fas fa-lock"></span>
-                            </div>
+                            <div class="input-group-text"><span class="fas fa-lock"></span></div>
                         </div>
                         <small id="error-password" class="error-text text-danger"></small>
                     </div>
-                    <div class="row">
-                        <div class="col-8">
+
+                    <!-- Remember Me -->
+                    <div class="row mb-2">
+                        <div class="col-12">
                             <div class="icheck-primary">
-                                <input type="checkbox" id="remember">
+                                <input type="checkbox" id="remember" name="remember">
                                 <label for="remember">Remember Me</label>
                             </div>
                         </div>
-                        <!-- /.col -->
-                        <div class="col-4">
+                    </div>
+
+                    <!-- Tombol Sign In & Daftar -->
+                    <div class="row">
+                        <div class="col-6">
                             <button type="submit" class="btn btn-primary btn-block">Sign In</button>
                         </div>
-                        <!-- /.col -->
+                        <div class="col-6">
+                            <button type="button" class="btn btn-secondary btn-block" id="btn-register">Daftar</button>
+                        </div>
                     </div>
                 </form>
             </div>
-            <!-- /.card-body -->
         </div>
-        <!-- /.card -->
     </div>
-    <!-- /.login-box -->
+
+    <!-- MODAL REGISTER -->
+<div class="modal fade" id="registerModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Daftar Akun Baru</h5>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="form-register">
+                    @csrf
+                    <div class="form-group">
+                        <label>Nama</label>
+                        <input type="text" id="nama" name="nama" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Username</label>
+                        <input type="text" id="username" name="username" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="password" name="password" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Level</label>
+                        <select id="level_id" name="level_id" class="form-control">
+                            <option value="1">Staff</option>
+                            <option value="2">Manager</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">Daftar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 
     <!-- jQuery -->
     <script src="{{ asset('adminlte/plugins/jquery/jquery.min.js') }}"></script>
@@ -77,15 +111,8 @@
     <!-- Bootstrap 4 -->
     <script src="{{ asset('adminlte/plugins/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
 
-    <!-- jquery-validation -->
-    <script src="{{ asset('adminlte/plugins/jquery-validation/jquery.validate.min.js') }}"></script>
-    <script src="{{ asset('adminlte/plugins/jquery-validation/additional-methods.min.js') }}"></script>
-
     <!-- SweetAlert2 -->
     <script src="{{ asset('adminlte/plugins/sweetalert2/sweetalert2.min.js') }}"></script>
-
-    <!-- AdminLTE App -->
-    <script src="{{ asset('adminlte/dist/js/adminlte.min.js') }}"></script>
 
     <script>
         $.ajaxSetup({
@@ -95,52 +122,45 @@
         });
 
         $(document).ready(function() {
-            $("#form-login").validate({
-                rules: {
-                    username: { required: true, minlength: 4, maxlength: 20 },
-                    password: { required: true, minlength: 6, maxlength: 20 }
-                },
-                submitHandler: function(form) {
-                    // ketika valid, maka bagian yang akan dijalankan
-                    $.ajax({
-                        url: form.action,
-                        type: form.method,
-                        data: $(form).serialize(),
-                        success: function(response) {
-                            if (response.status) { // jika sukses
-                                Swal.fire({
-                                    icon: 'success',
-                                    title: 'Berhasil',
-                                    text: response.message,
-                                }).then(function() {
-                                    window.location = response.redirect;
-                                });
-                            } else { // jika error
-                                $('.error-text').text('');
-                                $.each(response.msgField, function(prefix, val) {
-                                    $('#error-' + prefix).text(val[0]);
-                                });
-                                Swal.fire({
-                                    icon: 'error',
-                                    title: 'Terjadi Kesalahan',
-                                    text: response.message
-                                });
-                            }
+            // FORM LOGIN
+            $("#form-login").submit(function(e) {
+                e.preventDefault();
+                $.ajax({
+                    url: "{{ url('login') }}",
+                    type: "POST",
+                    data: $(this).serialize(),
+                    success: function(response) {
+                        if (response.status) {
+                            Swal.fire("Berhasil", response.message, "success")
+                                .then(() => window.location = response.redirect);
+                        } else {
+                            Swal.fire("Error", response.message, "error");
                         }
-                    });
-                    return false;
-                },
-                errorElement: 'span',
-                errorPlacement: function(error, element) {
-                    error.addClass('invalid-feedback');
-                    element.closest('.input-group').append(error);
-                },
-                highlight: function(element, errorClass, validClass) {
-                    $(element).addClass('is-invalid');
-                },
-                unhighlight: function(element, errorClass, validClass) {
-                    $(element).removeClass('is-invalid');
-                }
+                    }
+                });
+            });
+
+            // TOMBOL DAFTAR KLIK
+            $("#btn-register").click(function() {
+                $("#registerModal").modal("show");
+            });
+
+            // FORM REGISTER
+            $("#form-register").submit(function(e) {
+                e.preventDefault();
+                $.ajax({
+                    url: "{{ url('register') }}", // Ganti dengan URL backend
+                    type: "POST",
+                    data: $(this).serialize(),
+                    success: function(response) {
+                        if (response.status) {
+                            Swal.fire("Sukses!", response.message, "success")
+                                .then(() => $("#registerModal").modal("hide"));
+                        } else {
+                            Swal.fire("Gagal!", response.message, "error");
+                        }
+                    }
+                });
             });
         });
     </script>
