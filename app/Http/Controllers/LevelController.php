@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\LevelModel;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\Validator;
+use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class LevelController extends Controller
 {
@@ -216,5 +217,85 @@ public function show_ajax($id)
 {
     $level = LevelModel::find($id);
     return view('level.show_ajax', compact('level'));
+}
+
+public function import()
+{
+    return view('level.import');
+}
+
+
+public function import_ajax(Request $request)
+{
+    if ($request->ajax() || $request->wantsJson()) {
+
+        $validator = Validator::make($request->all(), [
+            'file_level' => [
+                'required',
+                'file',
+                'mimes:xlsx,xls',
+                'max:2048'
+            ]
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Validasi Gagal',
+                'msgField' => $validator->errors()
+            ]);
+        }
+
+        try {
+            $file = $request->file('file_level');
+            $spreadsheet = IOFactory::load($file->getRealPath());
+            $sheet = $spreadsheet->getActiveSheet();
+            $data = $sheet->toArray(null, false, true, true);
+
+            $insert = [];
+
+            if (count($data) > 1) {
+                foreach ($data as $index => $row) {
+                    if ($index > 1) {
+                        if (!empty($row['A']) && !empty($row['B'])) {
+                            $insert[] = [
+                                'level_nama' => $row['A'],
+                                'level_kode' => $row['B'],
+                                'created_at'  => now(),
+                            ];
+                        }
+                    }
+                }
+
+                if (count($insert) > 0) {
+                    LevelModel::insertOrIgnore($insert);
+
+                    return response()->json([
+                        'status' => true,
+                        'message' => 'Data berhasil diimport'
+                    ]);
+                } else {
+                    return response()->json([
+                        'status' => false,
+                        'message' => 'Tidak ada data valid untuk diimport'
+                    ]);
+                }
+            } else {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Sheet kosong atau tidak sesuai format'
+                ]);
+            }
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Terjadi kesalahan saat membaca file',
+                'debug' => $e->getMessage()
+            ]);
+        }
+    }
+
+    return redirect('/');
 }
 }

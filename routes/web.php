@@ -41,6 +41,8 @@ Route::middleware(['auth'])->group(function() {
         Route::delete('/{id}', [LevelController::class, 'destroy'])->name('level.destroy');
         Route::get('/{id}/delete_ajax', [LevelController::class, 'confirm_ajax'])->name('level.confirm_ajax');
         Route::delete('/{id}/delete_ajax', [LevelController::class, 'delete_ajax'])->name('level.delete_ajax');
+        Route::get('/import', [LevelController::class, 'import'])->name('level.import');
+        Route::post('/import_ajax', [LevelController::class, 'import_ajax'])->name('level.import_ajax');
     });
 
     // Kategori routes
@@ -96,6 +98,8 @@ Route::middleware(['auth'])->group(function() {
         Route::put('/{id}/update_ajax', [BarangController::class, 'update_ajax'])->name('barang.update_ajax');
         Route::get('/{id}/delete_ajax', [BarangController::class, 'confirm_ajax'])->name('barang.confirm_ajax');
         Route::delete('/{id}/delete_ajax', [BarangController::class, 'delete_ajax'])->name('barang.delete_ajax');
+        Route::get('/import', [BarangController::class, 'import'])->name('barang.import');
+        Route::post('/import_ajax', [BarangController::class, 'import_ajax'])->name('barang.import_ajax');
     });
 
     // User routes

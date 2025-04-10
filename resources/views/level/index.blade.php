@@ -3,18 +3,20 @@
 @section('content')
 <div class="card card-outline card-primary">
     <div class="card-header">
-        <h3 class="card-title">{{ $page->title }}</h3>
+        <h3 class="card-title">{{ $page->title ?? 'Data Level' }}</h3>
         <div class="card-tools">
-            <a href="{{ url('level/create') }}" class="btn btn-sm btn-primary mt-1">Tambah</a>
-            <button onclick="modalAction('{{ url('level/create_ajax') }}')" class="btn btn-sm btn-success mt-1">Tambah Ajax</button>
+            <button onclick="modalAction('{{ url('/level/import') }}')" class="btn btn-info btn-sm">Import Level</button>
+            <a href="{{ url('level/create') }}" class="btn btn-primary btn-sm">Tambah</a>
+            <button onclick="modalAction('{{ url('level/create_ajax') }}')" class="btn btn-success btn-sm">Tambah (Ajax)</button>
         </div>
     </div>
 
     <div class="card-body">
-        @if (session('success'))
+
+        @if(session('success'))
             <div class="alert alert-success">{{ session('success') }}</div>
         @endif
-        @if (session('error'))
+        @if(session('error'))
             <div class="alert alert-danger">{{ session('error') }}</div>
         @endif
 
@@ -27,39 +29,73 @@
                     <th>Aksi</th>
                 </tr>
             </thead>
+            <tbody></tbody>
         </table>
-        <!-- Modal container untuk form Ajax -->
-        <div id="myModal" class="modal fade animate shake" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false" aria-hidden="true"></div>
     </div>
 </div>
+
+<div id="myModal" class="modal fade animate shake" tabindex="-1" data-backdrop="static" data-keyboard="false" data-width="75%"></div>
 @endsection
 
 @push('js')
 <script>
-function modalAction(url = '') {
-    $('#myModal').load(url, function() {
-        $('#myModal').modal('show');
-    });
-}
+    function modalAction(url = '') {
+        $('#myModal').load(url, function () {
+            $('#myModal').modal('show');
+        });
+    }
 
-var dataLevel;
-$(document).ready(function() {
-    dataLevel = $('#table_level').DataTable({
-        serverSide: true,
-        ajax: {
-            url: "{{ route('level.list') }}",
-            type: "POST",
-            data: function(d) {
-                d._token = "{{ csrf_token() }}";
+    var tableLevel;
+    $(document).ready(function () {
+        tableLevel = $('#table_level').DataTable({
+            processing: true,
+            serverSide: true,
+            ajax: {
+                url: "{{ route('level.list') }}",
+                dataType: "json",
+                type: "POST",
+                data: function (d) {
+                    d._token = "{{ csrf_token() }}";
+                    // d.filter_role = $('.filter_role').val(); // kalau nanti pakai filter
+                }
+            },
+            columns: [
+                {
+                    data: "level_id",
+                    className: "text-center",
+                    width: "10%",
+                    orderable: true,
+                    searchable: true
+                },
+                {
+                    data: "level_nama",
+                    width: "35%",
+                    orderable: true,
+                    searchable: true
+                },
+                {
+                    data: "level_kode",
+                    width: "30%",
+                    orderable: true,
+                    searchable: true
+                },
+                {
+                    data: "aksi",
+                    className: "text-center",
+                    width: "25%",
+                    orderable: false,
+                    searchable: false
+                }
+            ]
+        });
+
+        // Enter to search
+        $('#table_level_filter input').unbind().bind().on('keyup', function (e) {
+            if (e.keyCode == 13) {
+                tableLevel.search(this.value).draw();
             }
-        },
-        columns: [
-            { data: "level_id", className: "text-center", orderable: true, searchable: true },
-            { data: "level_nama", orderable: true, searchable: true },
-            { data: "level_kode", orderable: true, searchable: true },
-            { data: "aksi", orderable: false, searchable: false }
-        ]
+        });
+
     });
-});
 </script>
 @endpush
