@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\Validator;
 use PhpParser\Node\Stmt\TryCatch;
+use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class UserController extends Controller
 {
@@ -281,7 +282,84 @@ public function delete_ajax(Request $request, $id)
     return redirect('/user');
 }
 
+public function import()
+{
+    return view('user.import');
+}
 
 
+public function import_ajax(Request $request)
+{
+    if ($request->ajax() || $request->wantsJson()) {
 
+        $validator = Validator::make($request->all(), [
+            'file_user' => [
+                'required',
+                'file',
+                'mimes:xlsx,xls',
+                'max:2048'
+            ]
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Validasi Gagal',
+                'msgField' => $validator->errors()
+            ]);
+        }
+
+        try {
+            $file = $request->file('file_user');
+            $spreadsheet = IOFactory::load($file->getRealPath());
+            $sheet = $spreadsheet->getActiveSheet();
+            $data = $sheet->toArray(null, false, true, true);
+
+            $insert = [];
+
+            if (count($data) > 1) {
+                foreach ($data as $index => $row) {
+                    if ($index > 1) {
+                        if (!empty($row['A']) && !empty($row['B'])) {
+                            $insert[] = [
+                                'username' => $row['A'],
+                                'nama' => $row['B'],
+                                'level_id' => $row['C'],
+                                'created_at'  => now(),
+                            ];
+                        }
+                    }
+                }
+
+                if (count($insert) > 0) {
+                    UserModel::insertOrIgnore($insert);
+
+                    return response()->json([
+                        'status' => true,
+                        'message' => 'Data berhasil diimport'
+                    ]);
+                } else {
+                    return response()->json([
+                        'status' => false,
+                        'message' => 'Tidak ada data valid untuk diimport'
+                    ]);
+                }
+            } else {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Sheet kosong atau tidak sesuai format'
+                ]);
+            }
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Terjadi kesalahan saat membaca file',
+                'debug' => $e->getMessage()
+            ]);
+        }
+    }
+
+    return redirect('/');
+}
 }

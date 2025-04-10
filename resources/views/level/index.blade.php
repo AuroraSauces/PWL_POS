@@ -56,7 +56,6 @@
                 type: "POST",
                 data: function (d) {
                     d._token = "{{ csrf_token() }}";
-                    // d.filter_role = $('.filter_role').val(); // kalau nanti pakai filter
                 }
             },
             columns: [

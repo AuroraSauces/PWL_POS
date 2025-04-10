@@ -61,6 +61,8 @@ Route::middleware(['auth'])->group(function() {
         Route::delete('/{id}', [KategoriController::class, 'destroy'])->name('kategori.destroy');
         Route::get('/{id}/delete_ajax', [KategoriController::class, 'confirm_ajax'])->name('kategori.confirm_ajax');
         Route::delete('/{id}/delete_ajax', [KategoriController::class, 'delete_ajax'])->name('kategori.delete_ajax');
+        Route::get('/import', [Kategoricontroller::class, 'import'])->name('user.import');
+        Route::post('/import_ajax', [KategoriController::class, 'import_ajax'])->name('user.import_ajax');
     });
 
     // Supplier routes
@@ -80,6 +82,8 @@ Route::middleware(['auth'])->group(function() {
         Route::get('/{id}/delete_ajax', [SupplierController::class, 'confirm_ajax'])->name('supplier.confirm_ajax');
         Route::delete('/{id}/delete_ajax', [SupplierController::class, 'delete_ajax'])->name('supplier.delete_ajax');
         Route::get('/{id}/show_ajax', [SupplierController::class, 'show_ajax'])->name('supplier.show_ajax');
+        Route::get('/import', [Suppliercontroller::class, 'import'])->name('user.import');
+        Route::post('/import_ajax', [SupplierController::class, 'import_ajax'])->name('user.import_ajax');
     });
 
     // Barang routes
@@ -118,5 +122,7 @@ Route::middleware(['auth'])->group(function() {
         Route::delete('/{id}', [UserController::class, 'destroy'])->name('user.destroy');
         Route::get('/{id}/delete_ajax', [UserController::class, 'confirm_ajax'])->name('user.confirm_ajax');
         Route::delete('/{id}/delete_ajax', [UserController::class, 'delete_ajax'])->name('user.delete_ajax');
+        Route::get('/import', [UserController::class, 'import'])->name('user.import');
+        Route::post('/import_ajax', [UserController::class, 'import_ajax'])->name('user.import_ajax');
     });
 });

@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\SupplierModel;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\Validator;
+use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class SupplierController extends Controller
 {
@@ -241,4 +242,86 @@ class SupplierController extends Controller
         $supplier = SupplierModel::find($id);
         return view('supplier.show_ajax', compact('supplier'));
     }
+
+    public function import()
+    {
+    return view('supplier.import');
+    }
+
+
+public function import_ajax(Request $request)
+{
+    if ($request->ajax() || $request->wantsJson()) {
+
+        $validator = Validator::make($request->all(), [
+            'file_supplier' => [
+                'required',
+                'file',
+                'mimes:xlsx,xls',
+                'max:2048'
+            ]
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Validasi Gagal',
+                'msgField' => $validator->errors()
+            ]);
+        }
+
+        try {
+            $file = $request->file('file_supplier');
+            $spreadsheet = IOFactory::load($file->getRealPath());
+            $sheet = $spreadsheet->getActiveSheet();
+            $data = $sheet->toArray(null, false, true, true);
+
+            $insert = [];
+
+            if (count($data) > 1) {
+                foreach ($data as $index => $row) {
+                    if ($index > 1) {
+                        if (!empty($row['A']) && !empty($row['B'])) {
+                            $insert[] = [
+                                'supplier_kode' => $row['A'],
+                                'supplier_nama' => $row['B'],
+                                'supplier_alamat' => $row['C'],
+                                'supplier_kontak' => $row['D'],
+                                'created_at'  => now(),
+                            ];
+                        }
+                    }
+                }
+
+                if (count($insert) > 0) {
+                    SupplierModel::insertOrIgnore($insert);
+
+                    return response()->json([
+                        'status' => true,
+                        'message' => 'Data berhasil diimport'
+                    ]);
+                } else {
+                    return response()->json([
+                        'status' => false,
+                        'message' => 'Tidak ada data valid untuk diimport'
+                    ]);
+                }
+            } else {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Sheet kosong atau tidak sesuai format'
+                ]);
+            }
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Terjadi kesalahan saat membaca file',
+                'debug' => $e->getMessage()
+            ]);
+        }
+    }
+
+    return redirect('/');
+}
 }
