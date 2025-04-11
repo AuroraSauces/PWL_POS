@@ -324,4 +324,75 @@ public function import_ajax(Request $request)
 
     return redirect('/');
 }
+
+public function export_excel()
+{
+    // Ambil data supplier
+    $supplier = SupplierModel::select('supplier_kode', 'supplier_nama', 'supplier_alamat', 'supplier_kontak')
+        ->orderBy('supplier_kode')
+        ->get();
+
+    // Load library PhpSpreadsheet
+    $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+    $sheet = $spreadsheet->getActiveSheet();
+
+    // Set judul kolom (header)
+    $sheet->setCellValue('A1', 'No');
+    $sheet->setCellValue('B1', 'Kode Supplier');
+    $sheet->setCellValue('C1', 'Nama Supplier');
+    $sheet->setCellValue('D1', 'Alamat');
+    $sheet->setCellValue('E1', 'Kontak');
+    $sheet->getStyle('A1:E1')->getFont()->setBold(true);
+
+    // Isi data ke baris berikutnya
+    $no = 1;
+    $baris = 2;
+    foreach ($supplier as $value) {
+        $sheet->setCellValue('A' . $baris, $no);
+        $sheet->setCellValue('B' . $baris, $value->supplier_kode);
+        $sheet->setCellValue('C' . $baris, $value->supplier_nama);
+        $sheet->setCellValue('D' . $baris, $value->supplier_alamat);
+        $sheet->setCellValue('E' . $baris, $value->supplier_kontak);
+        $no++;
+        $baris++;
+    }
+
+    // Auto size kolom
+    foreach (range('A', 'E') as $columnID) {
+        $sheet->getColumnDimension($columnID)->setAutoSize(true);
+    }
+
+    $sheet->setTitle('Data Supplier');
+
+    $writer = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($spreadsheet, 'Xlsx');
+    $filename = 'Data Supplier ' . date('Y-m-d H-i-s') . '.xlsx';
+
+    // Set header untuk download file
+    header("Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+    header("Content-Disposition: attachment;filename=\"$filename\"");
+    header("Cache-Control: max-age=0");
+    header("Expires: Mon, 26 Jul 1997 05:00:00 GMT");
+    header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
+    header("Cache-Control: cache, must-revalidate");
+    header("Pragma: public");
+
+    $writer->save('php://output');
+    exit;
+}
+
+public function export_pdf()
+{
+    $supplier = SupplierModel::select('supplier_kode', 'supplier_nama', 'supplier_alamat', 'supplier_kontak')
+        ->orderBy('supplier_kode')
+        ->get();
+
+    $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('supplier.export_pdf', ['supplier' => $supplier]);
+    $pdf->setPaper('a4', 'portrait'); // Ukuran dan orientasi kertas
+    $pdf->setOption('isRemoteEnabled', true); // Aktifkan jika ada gambar URL
+    $pdf->render();
+
+    return $pdf->stream('Data Supplier ' . date('Y-m-d H:i:s') . '.pdf');
+}
+
+
 }

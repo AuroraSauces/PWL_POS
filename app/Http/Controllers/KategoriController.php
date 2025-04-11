@@ -300,4 +300,71 @@ public function import_ajax(Request $request)
 
     return redirect('/');
 }
+
+public function export_excel()
+{
+    // Ambil data kategori
+    $kategori = KategoriModel::select('kategori_kode', 'kategori_nama')
+        ->orderBy('kategori_kode')
+        ->get();
+
+    // Load library PhpSpreadsheet
+    $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+    $sheet = $spreadsheet->getActiveSheet();
+
+    // Set judul kolom (header)
+    $sheet->setCellValue('A1', 'No');
+    $sheet->setCellValue('B1', 'Kode Kategori');
+    $sheet->setCellValue('C1', 'Nama Kategori');
+    $sheet->getStyle('A1:C1')->getFont()->setBold(true);
+
+    // Isi data ke baris berikutnya
+    $no = 1;
+    $baris = 2;
+    foreach ($kategori as $value) {
+        $sheet->setCellValue('A' . $baris, $no);
+        $sheet->setCellValue('B' . $baris, $value->kategori_kode);
+        $sheet->setCellValue('C' . $baris, $value->kategori_nama);
+        $no++;
+        $baris++;
+    }
+
+    // Auto size kolom
+    foreach (range('A', 'C') as $columnID) {
+        $sheet->getColumnDimension($columnID)->setAutoSize(true);
+    }
+
+    $sheet->setTitle('Data Kategori');
+
+    $writer = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($spreadsheet, 'Xlsx');
+    $filename = 'Data Kategori ' . date('Y-m-d H-i-s') . '.xlsx';
+
+    // Set header untuk download file
+    header("Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+    header("Content-Disposition: attachment;filename=\"$filename\"");
+    header("Cache-Control: max-age=0");
+    header("Expires: Mon, 26 Jul 1997 05:00:00 GMT");
+    header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
+    header("Cache-Control: cache, must-revalidate");
+    header("Pragma: public");
+
+    $writer->save('php://output');
+    exit;
+}
+
+public function export_pdf()
+{
+    $kategori = KategoriModel::select('kategori_kode', 'kategori_nama')
+        ->orderBy('kategori_kode')
+        ->get();
+
+    $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('kategori.export_pdf', ['kategori' => $kategori]);
+    $pdf->setPaper('a4', 'portrait');
+    $pdf->setOption('isRemoteEnabled', true);
+    $pdf->render();
+
+    return $pdf->stream('Data Kategori ' . date('Y-m-d H:i:s') . '.pdf');
+}
+
+
 }
