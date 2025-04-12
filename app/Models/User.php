@@ -13,6 +13,13 @@ class User extends Authenticatable
     use HasFactory, Notifiable;
 
     /**
+     * Nama tabel yang digunakan
+     *
+     * @var string
+     */
+    protected $table = 'm_user';
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var list<string>
@@ -21,6 +28,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'profile_photo', // Tambahan untuk foto profil
     ];
 
     /**

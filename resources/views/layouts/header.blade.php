@@ -144,6 +144,50 @@
       @csrf
   </form>
 
+  <!-- Bagian dropdown profil di navbar -->
+<li class="nav-item dropdown">
+    <a class="nav-link" data-toggle="dropdown" href="#" role="button">
+        <img src="{{ Auth::user()->profile_photo ? asset('storage/'.Auth::user()->profile_photo) : asset('dist/img/default-user.jpg') }}"
+        class="img-size-32 img-circle elevation-2"
+        alt="User Image">
+    </a>
+    <div class="dropdown-menu dropdown-menu-right">
+      <a href="#" class="dropdown-item" data-toggle="modal" data-target="#changePhotoModal">
+        <i class="fas fa-image mr-2"></i> Ganti Foto Profil
+      </a>
+      <div class="dropdown-divider"></div>
+      <a class="dropdown-item" href="{{ url('logout') }}"
+         onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+        <i class="fas fa-sign-out-alt mr-2"></i> Logout
+      </a>
+    </div>
+  </li>
+
     </ul>
   </nav>
+
+<!-- Modal Upload Foto Profil -->
+<div class="modal fade" id="changePhotoModal" tabindex="-1" role="dialog" aria-labelledby="changePhotoModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <form action="{{ route('profile.updatePhoto') }}" method="POST" enctype="multipart/form-data">
+        @csrf
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="changePhotoModalLabel">Ganti Foto Profil</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Tutup">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <input type="file" name="profile_photo" class="form-control-file" accept="image/*" required>
+          </div>
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-primary">Upload</button>
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
 

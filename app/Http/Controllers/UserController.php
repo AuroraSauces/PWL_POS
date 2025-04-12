@@ -320,12 +320,13 @@ public function import_ajax(Request $request)
             if (count($data) > 1) {
                 foreach ($data as $index => $row) {
                     if ($index > 1) {
-                        if (!empty($row['A']) && !empty($row['B'])) {
+                        if (!empty($row['A']) && !empty($row['B']) && !empty($row['D'])) {
                             $insert[] = [
-                                'username' => $row['A'],
-                                'nama' => $row['B'],
-                                'level_id' => $row['C'],
-                                'created_at'  => now(),
+                                'username'   => $row['A'],
+                                'nama'       => $row['B'],
+                                'level_id'   => $row['C'],
+                                'password'   => bcrypt($row['D']), // kolom D sebagai password
+                                'created_at' => now(),
                             ];
                         }
                     }

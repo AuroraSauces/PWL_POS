@@ -6,7 +6,9 @@ use App\Http\Controllers\KategoriController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\BarangController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
+
 
 // Define global pattern for ID parameters
 Route::pattern('id', '[0-9]+');
@@ -15,6 +17,7 @@ Route::pattern('id', '[0-9]+');
 Route::get('login', [AuthController::class, 'login'])->name('login');
 Route::post('login', [AuthController::class, 'postlogin']);
 Route::post('register', [AuthController::class, 'postRegister'])->name('register');
+Route::post('/profile/photo', [ProfileController::class, 'updatePhoto'])->name('profile.updatePhoto');
 
 // Protected routes - require authentication
 Route::middleware(['auth'])->group(function() {
