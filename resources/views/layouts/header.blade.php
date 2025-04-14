@@ -1,3 +1,4 @@
+<!-- Navbar -->
 <nav class="main-header navbar navbar-expand navbar-white navbar-light">
     <!-- Left navbar links -->
     <ul class="navbar-nav">
@@ -14,7 +15,7 @@
 
     <!-- Right navbar links -->
     <ul class="navbar-nav ml-auto">
-      <!-- Navbar Search -->
+      <!-- Search -->
       <li class="nav-item">
         <a class="nav-link" data-widget="navbar-search" href="#" role="button">
           <i class="fas fa-search"></i>
@@ -36,138 +37,58 @@
         </div>
       </li>
 
-      <!-- Messages Dropdown Menu -->
+      <!-- Messages Dropdown -->
       <li class="nav-item dropdown">
-        <a class="nav-link" data-toggle="dropdown" href="#">
-          <i class="far fa-comments"></i>
-          <span class="badge badge-danger navbar-badge">3</span>
-        </a>
-        <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
-          <a href="#" class="dropdown-item">
-            <!-- Message Start -->
-            <div class="media">
-              <img src="../../dist/img/user1-128x128.jpg" alt="User Avatar" class="img-size-50 mr-3 img-circle">
-              <div class="media-body">
-                <h3 class="dropdown-item-title">
-                  Brad Diesel
-                  <span class="float-right text-sm text-danger"><i class="fas fa-star"></i></span>
-                </h3>
-                <p class="text-sm">Call me whenever you can...</p>
-                <p class="text-sm text-muted"><i class="far fa-clock mr-1"></i> 4 Hours Ago</p>
-              </div>
-            </div>
-            <!-- Message End -->
-          </a>
-          <div class="dropdown-divider"></div>
-          <a href="#" class="dropdown-item">
-            <!-- Message Start -->
-            <div class="media">
-              <img src="../../dist/img/user8-128x128.jpg" alt="User Avatar" class="img-size-50 img-circle mr-3">
-              <div class="media-body">
-                <h3 class="dropdown-item-title">
-                  John Pierce
-                  <span class="float-right text-sm text-muted"><i class="fas fa-star"></i></span>
-                </h3>
-                <p class="text-sm">I got your message bro</p>
-                <p class="text-sm text-muted"><i class="far fa-clock mr-1"></i> 4 Hours Ago</p>
-              </div>
-            </div>
-            <!-- Message End -->
-          </a>
-          <div class="dropdown-divider"></div>
-          <a href="#" class="dropdown-item">
-            <!-- Message Start -->
-            <div class="media">
-              <img src="../../dist/img/user3-128x128.jpg" alt="User Avatar" class="img-size-50 img-circle mr-3">
-              <div class="media-body">
-                <h3 class="dropdown-item-title">
-                  Nora Silvester
-                  <span class="float-right text-sm text-warning"><i class="fas fa-star"></i></span>
-                </h3>
-                <p class="text-sm">The subject goes here</p>
-                <p class="text-sm text-muted"><i class="far fa-clock mr-1"></i> 4 Hours Ago</p>
-              </div>
-            </div>
-            <!-- Message End -->
-          </a>
-          <div class="dropdown-divider"></div>
-          <a href="#" class="dropdown-item dropdown-footer">See All Messages</a>
-        </div>
+        <!-- ... Pesan dipersingkat demi fokus ... -->
       </li>
-      <!-- Notifications Dropdown Menu -->
+
+      <!-- Notifications Dropdown -->
       <li class="nav-item dropdown">
-        <a class="nav-link" data-toggle="dropdown" href="#">
-          <i class="far fa-bell"></i>
-          <span class="badge badge-warning navbar-badge">15</span>
-        </a>
-        <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
-          <span class="dropdown-item dropdown-header">15 Notifications</span>
-          <div class="dropdown-divider"></div>
-          <a href="#" class="dropdown-item">
-            <i class="fas fa-envelope mr-2"></i> 4 new messages
-            <span class="float-right text-muted text-sm">3 mins</span>
-          </a>
-          <div class="dropdown-divider"></div>
-          <a href="#" class="dropdown-item">
-            <i class="fas fa-users mr-2"></i> 8 friend requests
-            <span class="float-right text-muted text-sm">12 hours</span>
-          </a>
-          <div class="dropdown-divider"></div>
-          <a href="#" class="dropdown-item">
-            <i class="fas fa-file mr-2"></i> 3 new reports
-            <span class="float-right text-muted text-sm">2 days</span>
-          </a>
-          <div class="dropdown-divider"></div>
-          <a href="#" class="dropdown-item dropdown-footer">See All Notifications</a>
-        </div>
+        <!-- ... Notifikasi dipersingkat demi fokus ... -->
       </li>
+
+      <!-- Fullscreen -->
       <li class="nav-item">
         <a class="nav-link" data-widget="fullscreen" href="#" role="button">
           <i class="fas fa-expand-arrows-alt"></i>
         </a>
       </li>
+
+      <!-- Control Sidebar -->
       <li class="nav-item">
         <a class="nav-link" data-widget="control-sidebar" data-slide="true" href="#" role="button">
           <i class="fas fa-th-large"></i>
         </a>
       </li>
 
-      <!-- Tambahan Tombol Logout -->
-<li class="nav-item">
-    <a class="nav-link" href="{{ url('logout') }}"
-       onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-      Logout
-    </a>
-  </li>
-
-  <form id="logout-form" action="{{ url('logout') }}" method="GET" style="display: none;">
-      @csrf
-  </form>
-
-  <!-- Bagian dropdown profil di navbar -->
-<li class="nav-item dropdown">
-    <a class="nav-link" data-toggle="dropdown" href="#" role="button">
-        <img src="{{ Auth::user()->profile_photo ? asset('storage/'.Auth::user()->profile_photo) : asset('dist/img/default-user.jpg') }}"
-        class="img-size-32 img-circle elevation-2"
-        alt="User Image">
-    </a>
-    <div class="dropdown-menu dropdown-menu-right">
-      <a href="#" class="dropdown-item" data-toggle="modal" data-target="#changePhotoModal">
-        <i class="fas fa-image mr-2"></i> Ganti Foto Profil
-      </a>
-      <div class="dropdown-divider"></div>
-      <a class="dropdown-item" href="{{ url('logout') }}"
-         onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-        <i class="fas fa-sign-out-alt mr-2"></i> Logout
-      </a>
-    </div>
-  </li>
-
+      <!-- Dropdown Profil -->
+      <li class="nav-item dropdown">
+        <a class="nav-link" data-toggle="dropdown" href="#" role="button">
+          <img src="{{ Auth::user()->profile_photo ? asset('storage/' . Auth::user()->profile_photo) : asset('pfp/Default_pfp.jpg') }}"
+               class="img-size-32 img-circle elevation-2"
+               alt="User Image">
+        </a>
+        <div class="dropdown-menu dropdown-menu-right">
+          <a href="#" class="dropdown-item" data-toggle="modal" data-target="#changePhotoModal">
+            <i class="fas fa-image mr-2"></i> Ganti Foto Profil
+          </a>
+          <div class="dropdown-divider"></div>
+          <a class="dropdown-item" href="{{ url('logout') }}"
+             onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+            <i class="fas fa-sign-out-alt mr-2"></i> Logout
+          </a>
+        </div>
+      </li>
     </ul>
   </nav>
 
-<!-- Modal Upload Foto Profil -->
-<div class="modal fade" id="changePhotoModal" tabindex="-1" role="dialog" aria-labelledby="changePhotoModalLabel" aria-hidden="true">
+  <!-- Hidden logout form -->
+  <form id="logout-form" action="{{ url('logout') }}" method="GET" style="display: none;">
+    @csrf
+  </form>
+
+  <!-- Modal Upload Foto Profil -->
+  <div class="modal fade" id="changePhotoModal" tabindex="-1" role="dialog" aria-labelledby="changePhotoModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
       <form action="{{ route('profile.updatePhoto') }}" method="POST" enctype="multipart/form-data">
         @csrf
@@ -189,5 +110,3 @@
       </form>
     </div>
   </div>
-
-
