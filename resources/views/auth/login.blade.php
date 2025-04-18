@@ -93,7 +93,7 @@
                     <div class="form-group">
                         <label>Level</label>
                         <select id="level_id" name="level_id" class="form-control">
-                            <option value="1">Staff</option>
+                            <option value="3">Staff</option>
                             <option value="2">Manager</option>
                         </select>
                     </div>

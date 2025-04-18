@@ -67,23 +67,36 @@ $(document).ready(function() {
                 success: function(response) {
                     if (response.status) {
                         $('#myModal').modal('hide');
+
                         Swal.fire({
                             icon: 'success',
                             title: 'Berhasil',
                             text: response.message
                         });
-                        dataUser.ajax.reload();
+
+                        // ✅ Perbaikan di sini:
+                        if (typeof tableUser !== 'undefined') {
+                            tableUser.ajax.reload(null, false); // reload data tanpa reset halaman
+                        }
                     } else {
                         $('.error-text').text('');
                         $.each(response.msgField, function(prefix, val) {
                             $('#error-' + prefix).text(val[0]);
                         });
+
                         Swal.fire({
                             icon: 'error',
                             title: 'Terjadi Kesalahan',
                             text: response.message
                         });
                     }
+                },
+                error: function(xhr) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal',
+                        text: 'Terjadi kesalahan saat menghubungi server.'
+                    });
                 }
             });
             return false;
