@@ -7,6 +7,8 @@ use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\BarangController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\StokController;
+use App\Http\Controllers\TransaksiPenjualanController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -137,5 +139,21 @@ Route::middleware(['auth'])->group(function() {
         Route::post('/import_ajax', [UserController::class, 'import_ajax'])->name('user.import_ajax');
         Route::get('/export_excel', [UserController::class, 'export_excel'])->name('user.export');
         Route::get('/export_pdf', [UserController::class, 'export_pdf'])->name('user.exportpdf');
+    });
+
+    Route::middleware(['authorize:ADM,MNG'])->prefix('stok')->group(function () {
+        Route::get('/', [App\Http\Controllers\StokController::class, 'index'])->name('stok.index');
+        Route::get('/create', [App\Http\Controllers\StokController::class, 'create'])->name('stok.create');
+        Route::post('/', [App\Http\Controllers\StokController::class, 'store'])->name('stok.store');
+        Route::get('/stok/edit/{id}', [StokController::class, 'edit'])->name('stok.edit');
+        Route::post('/stok/update/{id}', [StokController::class, 'update'])->name('stok.update');
+        Route::get('/stok/delete/{id}', [StokController::class, 'destroy'])->name('stok.destroy');
+    });
+
+    Route::middleware(['auth', 'authorize:ADM,MNG'])->prefix('penjualan')->group(function () {
+        Route::get('/', [TransaksiPenjualanController::class, 'index'])->name('penjualan.index');
+        Route::get('/create', [TransaksiPenjualanController::class, 'create'])->name('penjualan.create');
+        Route::post('/', [TransaksiPenjualanController::class, 'store'])->name('penjualan.store');
+        Route::post('/cek-stok', [TransaksiPenjualanController::class, 'cekStok'])->name('penjualan.cek-stok');
     });
 });
