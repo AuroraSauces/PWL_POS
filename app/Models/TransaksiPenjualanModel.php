@@ -16,12 +16,20 @@ class TransaksiPenjualanModel extends Model
     protected $fillable = [
         'penjualan_tanggal', // Gunakan penjualan_tanggal yang ada di tabel
         'pembeli',           // Menambahkan kolom pembeli
+        'user_id',           // Kolom user_id untuk mengetahui siapa yang membuat transaksi
     ];
 
     // Relasi dengan detail penjualan
     public function detailPenjualan()
     {
         return $this->hasMany(TransaksiPenjualanDetailModel::class, 'penjualan_id');
+    }
+
+    // Relasi dengan User (menambahkan informasi user yang terkait dengan transaksi)
+    public function user()
+    {
+        // Menghubungkan user_id di t_penjualan dengan user_id di m_user
+        return $this->belongsTo(User::class, 'user_id', 'user_id');
     }
 
     // Menghitung total transaksi

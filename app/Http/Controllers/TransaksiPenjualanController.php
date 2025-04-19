@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use App\Models\TransaksiPenjualanModel;
@@ -7,86 +8,123 @@ use App\Models\BarangModel;
 use App\Models\StokModel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Auth; // Import Auth untuk mendapatkan pengguna yang sedang login
 
 class TransaksiPenjualanController extends Controller
 {
     public function index()
     {
         $activeMenu = 'penjualan';
-        $penjualan = TransaksiPenjualanModel::with('detailPenjualan')->latest()->get();
+        // Load penjualan dengan relasi detail penjualan dan user
+        $penjualan = TransaksiPenjualanModel::with('detailPenjualan', 'user')->latest()->get();
 
         return view('penjualan.index', compact('penjualan', 'activeMenu'));
     }
 
     public function create()
     {
-        $barang = BarangModel::all();
+        // Mengambil data barang dan menambahkan informasi stok untuk masing-masing barang
+        $barang = BarangModel::all()->map(function ($item) {
+            // Menghitung total stok barang berdasarkan barang_id
+            $item->stok = StokModel::where('barang_id', $item->barang_id)->sum('stok_jumlah');
+            return $item;
+        });
+
         return view('penjualan.create', compact('barang'));
     }
 
     public function store(Request $request)
     {
         // Validasi input
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'penjualan_details' => 'required|array',
             'penjualan_details.*.barang_id' => 'required|exists:m_barang,barang_id',
-            'penjualan_details.*.jumlah' => 'required|integer|min:1',
-            'pembeli' => 'required|string|max:255', // Validasi pembeli
+            'pembeli' => 'required|string|max:255',
         ]);
 
-        // CHECK STOCK FIRST before creating any records
-        foreach ($request->penjualan_details as $detail) {
-            // Cek apakah stok barang cukup
-            $stokBarang = StokModel::where('barang_id', $detail['barang_id'])
-                ->orderBy('stok_tanggal', 'asc')
-                ->get();
-
-            $jumlahYangDijual = $detail['jumlah'];
-            $stokCukup = false;
-            $totalStok = 0;
-
-            foreach ($stokBarang as $stokItem) {
-                $totalStok += $stokItem->stok_jumlah;
-                if ($totalStok >= $jumlahYangDijual) {
-                    $stokCukup = true;
-                    break;
-                }
+        if ($validator->fails()) {
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validasi gagal',
+                    'errors' => $validator->errors()->all()
+                ], 422);
             }
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
 
-            if (!$stokCukup) {
-                // Get the product name for a more informative error message
-                $barang = BarangModel::find($detail['barang_id']);
-                $barangNama = $barang ? $barang->barang_nama : 'ID: ' . $detail['barang_id'];
+        // Cek stok semua barang yang dipilih (jumlah selalu 1)
+        foreach ($request->penjualan_details as $detail) {
+            $barangId = $detail['barang_id'];
+
+            // Cek total stok barang yang dipilih
+            $totalStok = StokModel::where('barang_id', $barangId)->sum('stok_jumlah');
+
+            if ($totalStok < 1) {
+                $barang = BarangModel::find($barangId);
+                $barangNama = $barang ? $barang->barang_nama : 'ID: ' . $barangId;
+
+                if ($request->ajax()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Stok barang ' . $barangNama . ' tidak cukup.'
+                    ], 400);
+                }
 
                 return redirect()->route('penjualan.create')->with('error', 'Stok barang ' . $barangNama . ' tidak cukup.');
             }
         }
 
-        // Use database transaction to ensure data integrity
+        // Memulai transaksi
         DB::beginTransaction();
 
         try {
-            // Only create the transaction if ALL stock checks pass
+            // Simpan transaksi penjualan
             $penjualan = TransaksiPenjualanModel::create([
                 'penjualan_tanggal' => now(),
                 'pembeli' => $request->pembeli,
+                'user_id' => Auth::id(), // Menambahkan user_id yang login
             ]);
 
-            // Process details and reduce stock
+            // Simpan detail penjualan dan kurangi stok
             foreach ($request->penjualan_details as $detail) {
+                $barangId = $detail['barang_id'];
+
+                // Simpan detail transaksi
                 $penjualanDetail = TransaksiPenjualanDetailModel::create([
                     'penjualan_id' => $penjualan->penjualan_id,
-                    'barang_id' => $detail['barang_id'],
-                    'jumlah' => $detail['jumlah'],
+                    'barang_id' => $barangId,
+                    'jumlah' => 1, // Jumlah barang yang selalu 1
                 ]);
 
-                $penjualanDetail->reduceStok();
+                // Kurangi stok untuk barang yang dijual
+                $penjualanDetail->reduceStok(); // Panggil method reduceStok untuk mengurangi stok
             }
 
+            // Commit transaksi
             DB::commit();
+
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Transaksi penjualan berhasil',
+                    'redirect' => route('penjualan.index')
+                ]);
+            }
+
             return redirect()->route('penjualan.index')->with('success', 'Transaksi penjualan berhasil');
         } catch (\Exception $e) {
+            // Rollback transaksi jika terjadi error
             DB::rollBack();
+
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+                ], 500);
+            }
+
             return redirect()->route('penjualan.create')->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }
@@ -94,33 +132,22 @@ class TransaksiPenjualanController extends Controller
     // Method untuk pengecekan stok dengan AJAX
     public function cekStok(Request $request)
     {
-        $stokBarang = StokModel::where('barang_id', $request->barang_id)
-            ->orderBy('stok_tanggal', 'asc')
-            ->get();
+        $barangIds = $request->barang_ids ?? [];
+        $stokInfo = [];
 
-        $jumlahYangDijual = $request->jumlah;
-        $stokCukup = false;
-        $totalStok = 0;
+        foreach ($barangIds as $barangId) {
+            $totalStok = StokModel::where('barang_id', $barangId)->sum('stok_jumlah');
 
-        foreach ($stokBarang as $stokItem) {
-            $totalStok += $stokItem->stok_jumlah;
-            if ($totalStok >= $jumlahYangDijual) {
-                $stokCukup = true;
-                break;
+            if ($totalStok < 1) {
+                $stokInfo[$barangId] = 'Stok tidak cukup';
+            } else {
+                $stokInfo[$barangId] = 'Stok cukup';
             }
         }
 
-        if ($stokCukup) {
-            return response()->json(['success' => true]);
-        } else {
-            // Get the product name for a more informative error message
-            $barang = BarangModel::find($request->barang_id);
-            $barangNama = $barang ? $barang->barang_nama : 'ID: ' . $request->barang_id;
-
-            return response()->json([
-                'success' => false,
-                'message' => 'Stok barang ' . $barangNama . ' tidak cukup.'
-            ], 400); // Mengirimkan status 400 jika stok tidak cukup
-        }
+        return response()->json([
+            'success' => true,
+            'stokInfo' => $stokInfo
+        ]);
     }
 }

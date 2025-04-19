@@ -17,6 +17,7 @@
                 <tr>
                     <th>ID Transaksi</th>
                     <th>Nama Pembeli</th>
+                    <th>Nama User (Yang Menambahkan)</th> <!-- Menambahkan kolom Nama User -->
                     <th>Barang yang Dijual</th>
                     <th>Jumlah</th>
                     <th>Total Harga</th>
@@ -27,7 +28,8 @@
                 @foreach($penjualan as $item)
                     <tr>
                         <td>{{ $item->penjualan_id }}</td>
-                        <td>{{ $item->pembeli }}</td> <!-- Menampilkan nama pembeli -->
+                        <td>{{ $item->pembeli }}</td>
+                        <td>{{ $item->user->nama ?? 'Tidak Diketahui' }}</td> <!-- Menampilkan Nama User -->
                         <td>
                             @foreach($item->detailPenjualan as $detail)
                                 {{ $detail->barang->barang_nama }}<br>
@@ -39,7 +41,6 @@
                             @endforeach
                         </td>
                         <td>
-                            <!-- Menampilkan total harga dengan menggunakan totalTransaksi() -->
                             Rp. {{ number_format($item->totalTransaksi(), 0, ',', '.') }}
                         </td>
                         <td>{{ $item->created_at }}</td>
