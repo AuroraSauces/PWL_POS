@@ -25,26 +25,31 @@ class TransaksiPenjualanDetailModel extends Model
     }
 
     // Mengurangi stok berdasarkan jumlah yang dijual
-    public function reduceStok()
-    {
-        $stok = StokModel::where('barang_id', $this->barang_id)->orderBy('stok_tanggal', 'asc')->get();
-        $jumlahYangDijual = $this->jumlah;
+    public function reduceStok($jumlah = null)
+{
+    $jumlahYangDijual = $jumlah ?? $this->jumlah;
 
-        foreach ($stok as $stokItem) {
-            if ($jumlahYangDijual <= 0) {
-                break;
-            }
+    $stok = StokModel::where('barang_id', $this->barang_id)
+        ->where('stok_jumlah', '>', 0)
+        ->orderBy('stok_tanggal', 'asc')
+        ->get();
 
-            $stokYangAda = $stokItem->stok_jumlah;
-            if ($stokYangAda >= $jumlahYangDijual) {
-                $stokItem->stok_jumlah -= $jumlahYangDijual;
-                $stokItem->save();
-                break;
-            } else {
-                $jumlahYangDijual -= $stokYangAda;
-                $stokItem->stok_jumlah = 0;
-                $stokItem->save();
-            }
+    foreach ($stok as $stokItem) {
+        if ($jumlahYangDijual <= 0) {
+            break;
+        }
+
+        $stokYangAda = $stokItem->stok_jumlah;
+
+        if ($stokYangAda >= $jumlahYangDijual) {
+            $stokItem->stok_jumlah -= $jumlahYangDijual;
+            $stokItem->save();
+            break;
+        } else {
+            $jumlahYangDijual -= $stokYangAda;
+            $stokItem->stok_jumlah = 0;
+            $stokItem->save();
         }
     }
+}
 }

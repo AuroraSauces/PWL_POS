@@ -56,4 +56,33 @@
         </div>
     </div>
 
+    <div class="card mt-4">
+        <div class="card-header bg-info text-white">
+            <h5 class="mb-0">Barang yang Ready</h5>
+        </div>
+        <div class="card-body p-0">
+            <table class="table table-bordered m-0">
+                <thead class="thead-light">
+                    <tr>
+                        <th>Nama Barang</th>
+                        <th>Stok Ready</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($barangReady as $barang)
+                        <tr>
+                            <td>{{ $barang->barang_nama }}</td>
+                            <td>{{ $barang->stok_ready }}</td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="2" class="text-center">Tidak ada barang yang ready</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+
 @endsection

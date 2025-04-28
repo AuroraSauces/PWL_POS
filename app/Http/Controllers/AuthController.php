@@ -22,7 +22,7 @@ class AuthController extends Controller
     {
         if ($request->ajax() || $request->wantsJson()) {
             $credentials = $request->only('username', 'password');
-
+            
             if (Auth::attempt($credentials)) {
                 return response()->json([
                     'status' => true,

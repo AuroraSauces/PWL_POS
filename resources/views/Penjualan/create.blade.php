@@ -1,146 +1,129 @@
-@extends('layouts.template')
+<form action="{{ route('penjualan.store_ajax') }}" method="POST" id="form-tambah-penjualan">
+    @csrf
+    <div class="modal-header">
+        <h5 class="modal-title">Tambah Transaksi Penjualan</h5>
+        <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+    </div>
 
-@section('content')
-<div class="container">
-    <h1>Transaksi Penjualan</h1>
-
-    @if(session('error'))
-        <div class="alert alert-danger">{{ session('error') }}</div>
-    @endif
-
-    <div id="error-container" class="alert alert-danger" style="display:none;"></div>
-
-    <form id="transaksiForm" action="{{ route('penjualan.store') }}" method="POST">
-        @csrf
-
+    <div class="modal-body">
         <div class="form-group">
             <label for="pembeli">Nama Pembeli</label>
             <input type="text" name="pembeli" id="pembeli" class="form-control" required>
         </div>
 
-        <div class="form-group mt-3">
-            <label>Pilih Barang yang Dibeli (masing-masing akan dianggap beli 1 unit)</label>
-            <div class="row">
-                @foreach($barang as $item)
-                    <div class="col-md-4">
-                        <div class="form-check">
-                            <input type="checkbox" name="barang_ids[]" value="{{ $item->barang_id }}" class="form-check-input barang-checkbox" id="barang_{{ $item->barang_id }}" data-barang-id="{{ $item->barang_id }}">
-                            <label class="form-check-label" for="barang_{{ $item->barang_id }}" id="label_{{ $item->barang_id }}">
-                                {{ $item->barang_nama }} (Stok: {{ $item->stok }})
-                            </label>
-                        </div>
-                    </div>
-                @endforeach
-            </div>
+        <label>Daftar Barang</label>
+        <div id="barang-container">
+            <!-- Baris barang akan ditambahkan di sini -->
         </div>
 
-        <button type="submit" class="btn btn-primary mt-4" id="submitBtn" disabled>Simpan Transaksi</button>
-    </form>
-</div>
-@endsection
+        <button type="button" id="add-barang" class="btn btn-sm btn-success mt-2">
+            Tambah Barang
+        </button>
+    </div>
 
-@push('js')
-<script>
-    function updateCheckboxStates(stokInfo) {
-        let adaYangBisaDipilih = false;
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
+        <button type="submit" class="btn btn-primary" id="submit-penjualan">Simpan</button>
+    </div>
+</form>
 
-        document.querySelectorAll('.barang-checkbox').forEach(cb => {
-            const id = cb.dataset.barangId;
-            const label = document.getElementById('label_' + id);
-
-            if (stokInfo[id] === 'Stok tidak cukup') {
-                label.style.color = 'red';
-                cb.checked = false;
-                cb.disabled = true;
-            } else {
-                label.style.color = 'black';
-                cb.disabled = false;
-                adaYangBisaDipilih = true;
-            }
-        });
-
-        const checked = document.querySelectorAll('.barang-checkbox:checked');
-        const validChecked = Array.from(checked).filter(cb => !cb.disabled);
-        document.getElementById('submitBtn').disabled = validChecked.length === 0 && !adaYangBisaDipilih;
-    }
-
-    function cekStokBarang() {
-        const allCheckboxes = document.querySelectorAll('.barang-checkbox');
-        const barangIds = Array.from(allCheckboxes).map(item => item.dataset.barangId);
-
-        if (barangIds.length === 0) {
-            document.getElementById('submitBtn').disabled = true;
-            return;
-        }
-
-        fetch("{{ route('penjualan.cek-stok') }}", {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-            },
-            body: JSON.stringify({ barang_ids: barangIds })
-        })
-        .then(res => res.json())
-        .then(data => {
-            updateCheckboxStates(data.stokInfo);
-        })
-        .catch(err => {
-            console.error(err);
-            alert('Terjadi kesalahan saat memeriksa stok.');
-        });
-    }
-
-    // Cek stok saat halaman pertama kali dimuat
-    window.addEventListener('DOMContentLoaded', () => {
-        cekStokBarang();
-    });
-
-    // Cek ulang saat checkbox berubah
-    document.querySelectorAll('.barang-checkbox').forEach(cb => {
-        cb.addEventListener('change', cekStokBarang);
-    });
-
-    // Submit form
-    document.getElementById('transaksiForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        const errorContainer = document.getElementById('error-container');
-        errorContainer.style.display = 'none';
-
-        const checkedItems = Array.from(document.querySelectorAll('.barang-checkbox:checked')).filter(cb => !cb.disabled);
-        if (checkedItems.length === 0) {
-            errorContainer.textContent = 'Pilih minimal satu barang.';
-            errorContainer.style.display = 'block';
-            return;
-        }
-
-        const formData = new FormData(this);
-        formData.delete('barang_ids[]');
-
-        checkedItems.forEach((checkbox, index) => {
-            formData.append(`penjualan_details[${index}][barang_id]`, checkbox.value);
-        });
-
-        fetch(this.action, {
-            method: 'POST',
-            body: formData,
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                window.location.href = data.redirect || "{{ route('penjualan.index') }}";
-            } else {
-                errorContainer.textContent = data.message || 'Terjadi kesalahan saat menyimpan transaksi.';
-                errorContainer.style.display = 'block';
-            }
-        })
-        .catch(() => {
-            errorContainer.textContent = 'Terjadi kesalahan saat menyimpan transaksi.';
-            errorContainer.style.display = 'block';
-        });
-    });
+<!-- Template baris barang -->
+<script type="text/template" id="barang-row-template">
+    <div class="row barang-row mb-2">
+        <div class="col-md-6">
+            <select name="barang_ids[]" class="form-control" required>
+                <option value="">-- Pilih Barang --</option>
+                @foreach($barang as $item)
+                    @if($item->stok > 0)
+                        <option value="{{ $item->barang_id }}">
+                            {{ $item->barang_nama }} (Stok: {{ $item->stok }})
+                        </option>
+                    @endif
+                @endforeach
+            </select>
+        </div>
+        <div class="col-md-3">
+            <input type="number" name="jumlahs[]" class="form-control" placeholder="Qty" min="1" value="1" required>
+        </div>
+        <div class="col-md-3">
+            <button type="button" class="btn btn-danger btn-block remove-barang">Hapus</button>
+        </div>
+    </div>
 </script>
-@endpush
+
+<script>
+$(function () {
+    let formSubmitting = false;
+
+    function addBarangRow() {
+        const rowTemplate = $('#barang-row-template').html();
+        $('#barang-container').append(rowTemplate);
+    }
+
+    // Initialize first row
+    addBarangRow();
+
+    // Handle add button click
+    $('#add-barang').off('click').on('click', function () {
+        addBarangRow();
+    });
+
+    // Handle remove button click using event delegation
+    $(document).off('click', '.remove-barang').on('click', '.remove-barang', function () {
+        $(this).closest('.barang-row').remove();
+    });
+
+    // Unbind any existing submit handlers and add new one
+    $('#form-tambah-penjualan').off('submit').on('submit', function(e) {
+        e.preventDefault();
+
+        // Prevent duplicate submissions
+        if (formSubmitting) {
+            return false;
+        }
+
+        formSubmitting = true;
+        let form = $(this);
+        let formData = new FormData(this);
+        let submitBtn = $('#submit-penjualan');
+
+        submitBtn.prop('disabled', true).text('Menyimpan...');
+
+        $.ajax({
+            url: form.attr('action'),
+            method: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                formSubmitting = false;
+                submitBtn.prop('disabled', false).text('Simpan');
+
+                if (response.success) {
+                    $('#main-modal').modal('hide');
+                    Swal.fire({
+                        title: 'Berhasil!',
+                        text: response.message,
+                        icon: 'success'
+                    }).then(() => {
+                        location.reload();
+                    });
+                } else {
+                    Swal.fire('Gagal!', response.message, 'error');
+                }
+            },
+            error: function(xhr) {
+                formSubmitting = false;
+                submitBtn.prop('disabled', false).text('Simpan');
+
+                let message = 'Terjadi kesalahan saat mengirim data.';
+                if (xhr.responseJSON && xhr.responseJSON.message) {
+                    message = xhr.responseJSON.message;
+                }
+
+                Swal.fire('Error!', message, 'error');
+            }
+        });
+    });
+});
+</script>

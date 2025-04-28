@@ -141,19 +141,26 @@ Route::middleware(['auth'])->group(function() {
         Route::get('/export_pdf', [UserController::class, 'export_pdf'])->name('user.exportpdf');
     });
 
-    Route::middleware(['authorize:ADM,MNG'])->prefix('stok')->group(function () {
-        Route::get('/', [App\Http\Controllers\StokController::class, 'index'])->name('stok.index');
-        Route::get('/create', [App\Http\Controllers\StokController::class, 'create'])->name('stok.create');
-        Route::post('/', [App\Http\Controllers\StokController::class, 'store'])->name('stok.store');
-        Route::get('/stok/edit/{id}', [StokController::class, 'edit'])->name('stok.edit');
-        Route::post('/stok/update/{id}', [StokController::class, 'update'])->name('stok.update');
-        Route::get('/stok/delete/{id}', [StokController::class, 'destroy'])->name('stok.destroy');
+    Route::middleware(['authorize:ADM,MNG,STF'])->prefix('stok')->group(function () {
+        Route::get('/', [StokController::class, 'index'])->name('stok.index');
+        Route::get('/create_ajax', [StokController::class, 'create_ajax'])->name('stok.create');
+        Route::post('/', [StokController::class, 'store'])->name('stok.store');
+        Route::get('/edit/{id}', [StokController::class, 'edit'])->name('stok.edit');
+        Route::post('/update/{id}', [StokController::class, 'update'])->name('stok.update');
+        Route::get('/delete/{id}', [StokController::class, 'destroy'])->name('stok.destroy');
+        Route::post('/store_ajax', [StokController::class, 'store_ajax'])->name('stok.store_ajax');
+        Route::get('/list', [StokController::class, 'list'])->name('stok.list');
+        Route::delete('/stok/{id}', [StokController::class, 'delete_ajax'])->name('stok.delete');
+
     });
 
-    Route::middleware(['auth', 'authorize:ADM,MNG'])->prefix('penjualan')->group(function () {
+    Route::middleware(['auth', 'authorize:ADM,MNG,STF'])->prefix('penjualan')->group(function () {
         Route::get('/', [TransaksiPenjualanController::class, 'index'])->name('penjualan.index');
         Route::get('/create', [TransaksiPenjualanController::class, 'create'])->name('penjualan.create');
+        Route::get('/create_ajax', [TransaksiPenjualanController::class, 'create_ajax'])->name('penjualan.create_ajax');
+        Route::post('/store_ajax', [TransaksiPenjualanController::class, 'store_ajax'])->name('penjualan.store_ajax');
         Route::post('/', [TransaksiPenjualanController::class, 'store'])->name('penjualan.store');
         Route::post('/cek-stok', [TransaksiPenjualanController::class, 'cekStok'])->name('penjualan.cek-stok');
+        Route::get('/penjualan/list', [TransaksiPenjualanController::class, 'list'])->name('penjualan.list');
     });
 });

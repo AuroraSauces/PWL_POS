@@ -32,11 +32,22 @@
             background-color: #fff;
             border-radius: 8px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .profile-pic {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover; /* Ini yang bikin gambar tidak gepeng */
+            border: 3px solid #007bff;
+            margin-bottom: 20px;
         }
 
         .profile-details {
             font-size: 1.2rem;
             margin-bottom: 20px;
+            text-align: left;
         }
 
         .profile-details p {
@@ -55,7 +66,6 @@
             color: #fff;
             text-decoration: none;
             border-radius: 4px;
-            text-align: center;
             margin-top: 20px;
         }
 
@@ -71,10 +81,16 @@
     </header>
 
     <div class="container">
+        <!-- Gambar Profil -->
+        <img src="{{ $profile_picture_url ?? asset('default-avatar.png') }}" alt="Foto Profil" class="profile-pic">
+
+        <!-- Detail Profil -->
         <div class="profile-details">
             <p><strong>ID Pengguna:</strong> {{ $id }}</p>
             <p><strong>Nama:</strong> {{ $name }}</p>
         </div>
+
+        <!-- Link Balik -->
         <a href="{{ url('/') }}" class="back-link">Back To Home</a>
     </div>
 
