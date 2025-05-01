@@ -19,9 +19,6 @@
             'harga_jual'
         ];
 
-        /**
-         * Get the kategori that owns the barang
-         */
         public function kategori()
         {
             return $this->belongsTo(KategoriModel::class, 'kategori_id', 'kategori_id');
