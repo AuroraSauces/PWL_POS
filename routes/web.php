@@ -20,6 +20,7 @@ Route::get('login', [AuthController::class, 'login'])->name('login');
 Route::post('login', [AuthController::class, 'postlogin']);
 Route::post('register', [AuthController::class, 'postRegister'])->name('register');
 Route::post('/profile/photo', [ProfileController::class, 'updatePhoto'])->name('profile.updatePhoto');
+Route::get('/fix-passwords', [AuthController::class, 'fixLegacyPasswords']);
 
 // Protected routes - require authentication
 Route::middleware(['auth'])->group(function() {

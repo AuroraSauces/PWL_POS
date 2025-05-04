@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\BarangModel;
+use Illuminate\Support\Facades\Storage;
 
 class BarangController extends Controller
 {
@@ -21,7 +22,17 @@ class BarangController extends Controller
             'barang_nama' => 'required|string|max:100',
             'harga_beli' => 'required|numeric',
             'harga_jual' => 'required|numeric',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048'
         ]);
+
+        // Handle image upload
+        if ($request->hasFile('image')) {
+            $image = $request->file('image');
+            $validatedData['image'] = $image->hashName();
+
+            // Store the image
+            $image->store('public/barang');
+        }
 
         $barang = BarangModel::create($validatedData);
         return response()->json($barang, 201);
@@ -58,7 +69,22 @@ class BarangController extends Controller
             'barang_nama' => 'sometimes|string|max:100',
             'harga_beli' => 'sometimes|numeric',
             'harga_jual' => 'sometimes|numeric',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048'
         ]);
+
+        // Handle image update
+        if ($request->hasFile('image')) {
+            // Delete old image
+            if ($barang->image) {
+                Storage::delete('public/barang/' . $barang->image);
+            }
+
+            $image = $request->file('image');
+            $validatedData['image'] = $image->hashName();
+
+            // Store the new image
+            $image->store('public/barang');
+        }
 
         $barang->update($validatedData);
         return response()->json($barang);
@@ -76,6 +102,11 @@ class BarangController extends Controller
         }
 
         try {
+            // Delete image if exists
+            if ($barang->image) {
+                Storage::delete('public/barang/' . $barang->image);
+            }
+
             $barang->delete();
             return response()->json([
                 'success' => true,

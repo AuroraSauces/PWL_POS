@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use App\Models\UserModel; // ✅ Gunakan UserModel, bukan User
+use App\Models\UserModel;
 
 class AuthController extends Controller
 {
@@ -22,7 +22,7 @@ class AuthController extends Controller
     {
         if ($request->ajax() || $request->wantsJson()) {
             $credentials = $request->only('username', 'password');
-            
+
             if (Auth::attempt($credentials)) {
                 return response()->json([
                     'status' => true,
@@ -49,34 +49,52 @@ class AuthController extends Controller
         return redirect('login');
     }
 
-    // ✅ TAMBAHKAN FUNGSI REGISTER (DIPERBAIKI)
     public function postRegister(Request $request)
-{
-    $request->validate([
-        'username' => 'required|string|min:3|unique:m_user,username',
-        'nama'     => 'required|string|max:100',
-        'password' => 'required|min:5',
-        'level_id' => 'required|integer'
-    ]);
+    {
+        $request->validate([
+            'username' => 'required|string|min:3|unique:m_user,username',
+            'nama'     => 'required|string|max:100',
+            'password' => 'required|min:5',
+            'level_id' => 'required|integer'
+        ]);
 
-    // Simpan user ke database
-    $user = UserModel::create([
-        'username'  => $request->username,  // Remove 'reg_' prefix
-        'nama'      => $request->nama,      // Add this line
-        'password'  => $request->password,  // Remove 'reg_' prefix
-        'level_id'  => $request->level_id,  // Remove 'reg_' prefix
-    ]);
+        // Simpan user ke database dengan password terenkripsi
+        $user = UserModel::create([
+            'username'  => $request->username,
+            'nama'      => $request->nama,
+            'password'  => bcrypt($request->password), // Menggunakan bcrypt untuk konsistensi dengan API
+            'level_id'  => $request->level_id,
+            'image'     => 'Default_pfp.jpg', // Menambahkan gambar default
+        ]);
 
-    if ($user) {
+        if ($user) {
+            return response()->json([
+                'status' => true,
+                'message' => 'Pendaftaran Berhasil! Silakan login.'
+            ]);
+        }
+
         return response()->json([
-            'status' => true,
-            'message' => 'Pendaftaran Berhasil! Silakan login.'
+            'status' => false,
+            'message' => 'Pendaftaran Gagal!'
         ]);
     }
 
-    return response()->json([
-        'status' => false,
-        'message' => 'Pendaftaran Gagal!'
-    ]);
-}
+    // Fungsi untuk memperbarui password yang belum terenkripsi
+    public function fixLegacyPasswords()
+    {
+        $users = UserModel::all();
+        $count = 0;
+
+        foreach ($users as $user) {
+            // Cek apakah password belum di-hash (panjang kurang dari 40 karakter biasanya)
+            if (strlen($user->password) < 40) {
+                $user->password = bcrypt($user->password);
+                $user->save();
+                $count++;
+            }
+        }
+
+        return "Updated passwords for {$count} users";
+    }
 }
